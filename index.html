@@ -51,15 +51,20 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        .product {
-            display: inline-block;
-            width: 30%;
-            margin: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            text-align: center;
+            #product-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
         }
+        .product {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            background: #fff;
+        }
+
         .product img {
             width: 100%;
             height: 200px;
@@ -150,6 +155,58 @@
         #edit-profile-form {
             display: none;
         }
+        nav .nav-links a {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        }
+        .cart-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+            @media (max-width: 900px) {
+            #product-list {
+            grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+            @media (max-width: 600px) {
+            #product-list {
+            grid-template-columns: 1fr;
+            }
+        }
+        .checkout-form {
+    max-width: 500px;
+    }
+
+    .checkout-form .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 15px;
+    }
+
+    .checkout-form label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .checkout-form input,
+    .checkout-form select {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .checkout-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .checkout-actions button {
+        flex: 1;
+    }
+
+
     </style>
 </head>
 <body>
@@ -158,14 +215,16 @@
             <h2>Registrasi Akun</h2>
             <p>Harap registrasi akun terlebih dahulu untuk melanjutkan.</p>
             <form id="registration-form">
-                <label for="reg-name">Nama Lengkap:</label>
-                <input type="text" id="reg-name" required>
-                <label for="reg-address">Alamat:</label>
-                <textarea id="reg-address" required></textarea>
-                <label for="reg-phone">Nomor HP:</label>
-                <input type="tel" id="reg-phone" required>
-                <button type="submit">Registrasi</button>
+                <label>Nama Lengkap</label>
+                <input type="text" id="reg-name" placeholder="Nama lengkap" required>
+                <label>No HP / Email</label>
+                <input type="text" id="reg-contact" placeholder="08xxx atau email@example.com" required>
+                <label>Password</label>
+                <input type="password" id="reg-password" placeholder="Minimal 6 karakter" required>
+                <button type="submit">Daftar</button>
+                <button type="button" onclick="closeRegistration()">Batal</button>
             </form>
+
         </div>
     </div>
     <header>
@@ -176,11 +235,14 @@
             <a href="#" onclick="showHome()">Beranda</a>
             <a href="#" onclick="showHome()">Produk</a>
             <a href="#" onclick="showProfile()">Profil</a>
-            <a href="#" onclick="showOpenStore()">Buka Toko</a>
-            <a href="#" onclick="showCart()">Keranjang 🛒</a>
+            <a href="#" id="open-store-menu" onclick="showOpenStore()">Buka Toko</a>
+            <a href="#" onclick="showCart()" class="cart-link">
+                <span>Keranjang</span>
+                <span class="cart-icon">🛒</span>
+            </a>
             <a href="#" onclick="showCheckout()">Checkout</a>
         </div>
-        <button id="reg-button" onclick="handleRegButton()">Logout</button>
+            <button id="reg-button" onclick="handleRegButton()">Logout</button>
     </nav>
     <div class="container" id="home">
         <h2>Produk Kami</h2>
@@ -194,19 +256,32 @@
         <button onclick="showHome()">Kembali</button>
     </div>
     <div class="container" id="checkout">
-        <h2>Checkout</h2>
-        <p>Total Pembelian: Rp <span id="checkout-total">0</span></p>
-        <form id="checkout-form">
-            <label for="checkout-name">Nama Lengkap:</label>
+    <h2>Checkout</h2>
+    <p>Total Pembelian: Rp <span id="checkout-total">0</span></p>
+
+    <form id="checkout-form" class="checkout-form">
+        <div class="form-group">
+            <label>Nama Lengkap</label>
             <input type="text" id="checkout-name" required>
-            <label for="checkout-address">Alamat:</label>
-            <textarea id="checkout-address" required></textarea>
-            <label for="checkout-phone">Nomor HP:</label>
+        </div>
+
+        <div class="form-group">
+            <label>Pilih Alamat Pengiriman</label>
+            <select id="checkout-address-select" required></select>
+        </div>
+
+        <div class="form-group">
+            <label>Nomor HP</label>
             <input type="tel" id="checkout-phone" required>
+        </div>
+
+        <div class="checkout-actions">
             <button type="submit">Selesaikan Pembelian</button>
             <button type="button" onclick="showCart()">Kembali ke Keranjang</button>
-        </form>
-    </div>
+        </div>
+    </form>
+</div>
+
     <div class="container" id="product-detail">
         <h2 id="product-title"></h2>
         <img id="product-image" src="" alt="" style="width: 300px; height: 200px; object-fit: cover;">
@@ -231,34 +306,42 @@
         </form>
     </div>
     <div class="container" id="open-store">
-        <h2>Buka Toko</h2>
-        <p>Tambahkan produk baru untuk dijual.</p>
-        <form id="add-product-form">
-            <label for="product-name">Nama Produk:</label>
-            <input type="text" id="product-name" required>
-            <label for="product-price">Harga (Rp):</label>
-            <input type="number" id="product-price" required>
-            <label for="product-description">Deskripsi:</label>
-            <textarea id="product-description" required></textarea>
-            <label for="product-image">URL Gambar:</label>
-            <input type="url" id="product-image" placeholder="https://example.com/image.jpg" required>
-            <button type="submit">Tambah Produk</button>
-            <button type="button" onclick="showHome()">Kembali</button>
-        </form>
-    </div>
+    <h2>Buka Toko</h2>
+    <p>Tambahkan produk baru untuk dijual.</p>
+
+    <form id="add-product-form">
+        <input type="text" id="product-name" required>
+        <input type="number" id="new-product-price" placeholder="Harga (contoh: 250000)" required min="1">
+        <textarea id="product-description"></textarea>
+        <input type="file" id="new-product-image" accept="image/*" required>
+        <button type="submit">Tambah Produk</button>
+    </form>
+</div>
+
     <div class="container" id="profile">
         <h2>Profil Saya</h2>
         <div class="profile-info">
             <p><strong>Nama:</strong> <span id="profile-name"></span></p>
-            <p><strong>Alamat:</strong> <span id="profile-address"></span></p>
-            <p><strong>No HP:</strong> <span id="profile-phone"></span></p>
         </div>
+        <h3>Alamat Saya</h3>
+        <ul id="address-list"></ul>
+        <button onclick="toggleAddressForm()">Tambah Alamat</button>
+
+        <form id="address-form" style="display:none; margin-top:10px;">
+            <input type="text" id="address-label" placeholder="Nama Alamat (Rumah / Kantor)" required>
+            <textarea id="address-detail" placeholder="Alamat lengkap" required></textarea>
+            <button type="submit">Simpan Alamat</button>
+        </form>
+
+        <h3>Pesanan Saya</h3>
+        <div id="profile-transactions"></div>
+        <button onclick="upgradeToSeller()">Daftar Jadi Seller</button>
         <button onclick="toggleEditProfile()">Edit Profil</button>
         <button onclick="showHome()">Kembali</button>
         <form id="edit-profile-form">
             <label for="edit-name">Nama Lengkap:</label>
             <input type="text" id="edit-name" required>
-            <label for="edit-address">Alamat:</label>
+            <label for="edit-address">Alamat:</label></br>
             <textarea id="edit-address" required></textarea>
             <label for="edit-phone">Nomor HP:</label>
             <input type="tel" id="edit-phone" required>
@@ -273,11 +356,17 @@
         let currentProduct = null;
         let selectedRating = 0;
         let user = null;
-        let products = {
-            1: { name: 'Produk 1', price: 100000, image: 'https://via.placeholder.com/300x200?text=Produk+1', description: 'Ini adalah deskripsi lengkap untuk Produk 1. Produk ini sangat bagus untuk kebutuhan sehari-hari.' },
-            2: { name: 'Produk 2', price: 150000, image: 'https://via.placeholder.com/300x200?text=Produk+2', description: 'Ini adalah deskripsi lengkap untuk Produk 2. Produk ini memiliki fitur unggulan.' },
-            3: { name: 'Produk 3', price: 200000, image: 'https://via.placeholder.com/300x200?text=Produk+3', description: 'Ini adalah deskripsi lengkap untuk Produk 3. Produk ini cocok untuk pengguna profesional.' }
-        };
+        let products = JSON.parse(localStorage.getItem('products'));
+
+        if (!products) {
+            products = {
+                1: { name: 'Salad Buah', price: 100000, image: 'salad.jpg', description: '...' },
+                2: { name: 'Pisang Crispy Coklat', price: 150000, image: 'pisang.jpg', description: '...' },
+                3: { name: 'Kopi Maul', price: 200000, image: 'kopi.jpg', description: '...' }
+            };
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
 
         // Load produk dari localStorage
         function loadProducts() {
@@ -295,7 +384,7 @@
                 const div = document.createElement('div');
                 div.className = 'product';
                 div.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
+                    <img src="${product.image || 'https://picsum.photos/300/200'}" alt="${product.name}">
                     <h3>${product.name}</h3>
                     <p>Harga: Rp ${product.price}</p>
                     <button onclick="viewProduct(${id})">Lihat Detail</button>
@@ -306,17 +395,22 @@
         }
 
         // Cek registrasi saat load dan update tombol
-        window.onload = function() {
-            user = JSON.parse(localStorage.getItem('user'));
-            updateRegButton();
-            loadProducts();
-            if (!user) {
-                alert('Anda harus registrasi akun terlebih dahulu!');
-                document.getElementById('registration').style.display = 'flex';
-            } else {
-                showHome();
-            }
-        };
+          //  window.onload = function () {
+            //user = JSON.parse(localStorage.getItem('user'));
+            //updateRegButton();
+            //updateMenuAccess(); // ⬅️ PENTING
+            //loadProducts();
+            //showHome();
+        //};
+        window.onload = function () {
+        user = JSON.parse(localStorage.getItem('user'));
+        updateRegButton();
+        updateMenuAccess();
+        loadProducts();
+        showHome(); // langsung ke beranda
+    };
+
+
 
         function updateRegButton() {
             const button = document.getElementById('reg-button');
@@ -332,6 +426,7 @@
             if (user) {
                 localStorage.removeItem('user');
                 user = null;
+                updateMenuAccess();
                 cart = [];
                 total = 0;
                 updateCart();
@@ -344,15 +439,26 @@
             }
         }
 
-        function showProfile() {
+            function showProfile() {
             if (!user) {
                 alert('Registrasi dulu!');
                 document.getElementById('registration').style.display = 'flex';
                 return;
             }
-            document.getElementById('profile-name').textContent = user.name;
-            document.getElementById('profile-address').textContent = user.address;
-            document.getElementById('profile-phone').textContent = user.phone;
+
+            const nameEl = document.getElementById('profile-name');
+            const phoneEl = document.getElementById('profile-phone');
+
+            if (nameEl) nameEl.textContent = user.name || '-';
+            if (phoneEl) phoneEl.textContent = user.phone || '-';
+
+            // ⬇️ ALAMAT SEKARANG DITANGANI OLEH FUNCTION INI
+            if (typeof renderAddresses === 'function') {
+                renderAddresses();
+            }
+
+            renderProfileTransactions();
+
             document.getElementById('home').style.display = 'none';
             document.getElementById('cart').style.display = 'none';
             document.getElementById('checkout').style.display = 'none';
@@ -412,6 +518,8 @@
             });
             document.getElementById('total').textContent = total;
             document.getElementById('checkout-total').textContent = total;
+            document.getElementById('cart-checkout-btn').disabled = cart.length === 0;
+
         }
 
         function showHome() {
@@ -444,12 +552,24 @@
             document.getElementById('profile').style.display = 'none';
         }
 
-        function showCheckout() {
+            function showCheckout() {
             if (!user) {
                 alert('Registrasi dulu!');
                 document.getElementById('registration').style.display = 'flex';
                 return;
             }
+
+            if (cart.length === 0) {
+                alert('Keranjang masih kosong!');
+                return;
+            }
+
+            // auto isi data user
+            document.getElementById('checkout-name').value = user.name || '';
+            document.getElementById('checkout-phone').value = user.phone || '';
+
+            renderCheckoutAddresses();
+
             document.getElementById('home').style.display = 'none';
             document.getElementById('cart').style.display = 'none';
             document.getElementById('checkout').style.display = 'block';
@@ -458,6 +578,29 @@
             document.getElementById('open-store').style.display = 'none';
             document.getElementById('profile').style.display = 'none';
         }
+
+
+
+            function renderCheckoutAddresses() {
+            const select = document.getElementById('checkout-address-select');
+            select.innerHTML = '';
+
+            if (!user.addresses || user.addresses.length === 0) {
+                alert('Tambahkan alamat di profil terlebih dahulu');
+                showProfile();
+                return;
+            }
+
+            user.addresses.forEach(addr => {
+                const opt = document.createElement('option');
+                opt.value = addr.id;
+                opt.textContent = `${addr.label} - ${addr.detail}`;
+                select.appendChild(opt);
+            });
+        }
+
+
+
         function viewProduct(id) {
             if (!user) {
                 alert('Registrasi dulu!');
@@ -478,6 +621,9 @@
             document.getElementById('registration').style.display = 'none';
             document.getElementById('open-store').style.display = 'none';
             document.getElementById('profile').style.display = 'none';
+        }
+            function closeRegistration() {
+            document.getElementById('registration').style.display = 'none';
         }
         function renderReviews(productId) {
             const reviewsDiv = document.getElementById('reviews');
@@ -500,39 +646,186 @@
             document.getElementById('reviewer-name').value = '';
             document.getElementById('review-comment').value = '';
         }
-        document.getElementById('registration-form').addEventListener('submit', function(e) {
+
+            document.getElementById('registration-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const address = document.getElementById('reg-address').value;
-            const phone = document.getElementById('reg-phone').value;
-            user = { name, address, phone };
+            const name = document.getElementById('reg-name').value.trim();
+            const contact = document.getElementById('reg-contact').value.trim();
+            const password = document.getElementById('reg-password').value;
+            if (password.length < 6) {
+                alert('Password minimal 6 karakter');
+                return;
+            }
+            user = {
+                name,
+                contact,
+                level: 'user',
+                addresses: []
+            };
             localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('auth', JSON.stringify({ contact, password }));
             updateRegButton();
-            document.getElementById('registration').style.display = 'none';
+            closeRegistration();
             alert('Registrasi berhasil!');
             showHome();
         });
         document.getElementById('add-product-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const fileInput = document.getElementById('new-product-image');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Pilih gambar dulu');
+        return;
+    }
+
+    const name = document.getElementById('product-name').value;
+    const price = Number(document.getElementById('new-product-price').value);
+    const description = document.getElementById('product-description').value;
+
+    if (!price || price <= 0) {
+        alert('Harga harus diisi dan lebih dari 0');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function() {
+        const image = reader.result;
+        const newId = Date.now();
+
+        products[newId] = { name, price, description, image };
+        localStorage.setItem('products', JSON.stringify(products));
+
+        alert('Produk berhasil ditambahkan!');
+        renderProducts();
+        showHome();
+        e.target.reset();
+    };
+
+    reader.readAsDataURL(fileInput.files[0]);
+});
+
+            document.getElementById('checkout-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const name = document.getElementById('product-name').value;
-            const price = parseInt(document.getElementById('product-price').value);
-            const description = document.getElementById('product-description').value;
-            const image = document.getElementById('product-image').value;
-            const id = Date.now();
-            products[id] = { name, price, description, image };
-            localStorage.setItem('products', JSON.stringify(products));
-            renderProducts();
-            alert('Produk berhasil ditambahkan!');
-            showHome();
-        });
-        document.getElementById('checkout-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Pembelian berhasil! Terima kasih telah berbelanja.');
+
+            if (cart.length === 0) {
+                alert('Keranjang kosong!');
+                return;
+            }
+
+            const name = document.getElementById('checkout-name').value.trim();
+            const phone = document.getElementById('checkout-phone').value.trim();
+            const addressSelect = document.getElementById('checkout-address-select');
+            const selectedAddressId = addressSelect.value;
+
+            if (!name) {
+                alert('Nama lengkap wajib diisi');
+                return;
+            }
+
+            if (!selectedAddressId) {
+                alert('Pilih alamat pengiriman');
+                return;
+            }
+
+            if (!phone) {
+                alert('Nomor HP wajib diisi');
+                return;
+            }
+
+            const selectedAddress = user.addresses.find(a => a.id == selectedAddressId);
+
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+            const newTransaction = {
+                id: Date.now(),
+                date: new Date().toLocaleString(),
+                items: [...cart],
+                total: total,
+                status: 'Diproses',
+                address: selectedAddress
+            };
+
+            transactions.push(newTransaction);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+
+            alert('Pembayaran berhasil! Pesanan sedang diproses.');
+
             cart = [];
             total = 0;
             updateCart();
             showHome();
         });
+
+
+            function renderAddresses() {
+            const list = document.getElementById('address-list');
+            list.innerHTML = '';
+            if (!user.addresses || user.addresses.length === 0) {
+                list.innerHTML = '<li>Belum ada alamat</li>';
+                return;
+            }
+            user.addresses.forEach(addr => {
+                const li = document.createElement('li');
+                li.textContent = `${addr.label}: ${addr.detail}`;
+                list.appendChild(li);
+            });
+        }
+
+        document.getElementById('address-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const label = document.getElementById('address-label').value.trim();
+        const detail = document.getElementById('address-detail').value.trim();
+
+        if (!label || !detail) {
+            alert('Lengkapi alamat');
+            return;
+        }
+
+        if (!user.addresses) user.addresses = [];
+
+        user.addresses.push({
+            id: Date.now(),
+            label,
+            detail
+        });
+        localStorage.setItem('user', JSON.stringify(user));
+
+        renderAddresses();
+        e.target.reset();
+        document.getElementById('address-form').style.display = 'none';
+    });
+
+        document.getElementById('address-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const label = document.getElementById('address-label').value.trim();
+        const detail = document.getElementById('address-detail').value.trim();
+
+        if (!label || !detail) {
+            alert('Lengkapi alamat');
+            return;
+        }
+
+        if (!user.addresses) user.addresses = [];
+
+        user.addresses.push({
+            id: Date.now(),
+            label,
+            detail
+        });
+
+        localStorage.setItem('user', JSON.stringify(user));
+
+        renderAddresses();
+        e.target.reset();
+        document.getElementById('address-form').style.display = 'none';
+    });
+        function toggleAddressForm() {
+        const form = document.getElementById('address-form');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
         document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
             e.preventDefault();
             user.name = document.getElementById('edit-name').value;
@@ -543,6 +836,42 @@
             showProfile();
             alert('Profil berhasil diperbarui!');
         });
+            function renderProfileTransactions() {
+            const container = document.getElementById('profile-transactions');
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+            container.innerHTML = '';
+
+            if (transactions.length === 0) {
+                container.innerHTML = '<p>Belum ada pesanan.</p>';
+                return;
+            }
+
+            transactions.forEach((trx, index) => {
+                const div = document.createElement('div');
+                div.style.border = '1px solid #ddd';
+                div.style.padding = '10px';
+                div.style.marginBottom = '10px';
+                div.style.borderRadius = '5px';
+
+                let itemsHTML = '<ul>';
+                trx.items.forEach(item => {
+                    itemsHTML += `<li>${item.name} - Rp ${item.price}</li>`;
+                });
+                itemsHTML += '</ul>';
+
+                div.innerHTML = `
+                    <strong>Pesanan #${index + 1}</strong><br>
+                    <small>${trx.date}</small>
+                    <p>Status: <strong>${trx.status}</strong></p>
+                    ${itemsHTML}
+                    <p><strong>Total: Rp ${trx.total}</strong></p>
+                `;
+
+                container.appendChild(div);
+            });
+        }
+
         document.getElementById('rating-stars').addEventListener('click', function(e) {
             if (e.target.tagName === 'SPAN') {
                 selectedRating = parseInt(e.target.getAttribute('data-rating'));
@@ -572,6 +901,28 @@
             resetReviewForm();
             alert('Ulasan berhasil dikirim!');
         });
+        function updateMenuAccess() {
+            const openStoreMenu = document.getElementById('open-store-menu');
+
+            // guest atau buyer → sembunyikan
+            if (!user || user.role !== 'seller') {
+                openStoreMenu.style.display = 'none';
+            } else {
+                openStoreMenu.style.display = 'inline-block';
+            }
+        }
+        function upgradeToSeller() {
+        if (!user) {
+            alert('Silakan login terlebih dahulu');
+            return;
+        }
+
+        user.role = 'seller';
+        localStorage.setItem('user', JSON.stringify(user));
+        updateMenuAccess();
+        alert('Akun Anda sekarang menjadi SELLER!');
+    }
+
     </script>
 </body>
 </html>
