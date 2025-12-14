@@ -299,21 +299,21 @@
     .checkout-actions button {
         flex: 1;
     }
-    /* ===== NAVBAR MOBILE ===== */
+        /* ===== NAVBAR MOBILE ===== */
     @media (max-width: 768px) {
         nav {
             flex-direction: column;
             align-items: stretch;
             gap: 10px;
         }
-    
+
         nav .nav-links {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 10px;
         }
-    
+
         nav .nav-links a {
             margin: 0;
             padding: 8px 12px;
@@ -321,33 +321,67 @@
             border-radius: 6px;
             font-size: 14px;
         }
-    
+
         nav button {
             align-self: center;
             width: 100%;
             max-width: 200px;
         }
     }
+    /* === MOBILE NAVBAR === */
+        .mobile-menu-btn {
+            display: none;
+            background: #666;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 60px;
+            left: 10px;
+            right: 10px;
+            background: #444;
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 999;
+        }
+
+        .mobile-menu a {
+            display: block;
+            padding: 12px;
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid #555;
+        }
+
+        .mobile-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-menu a:hover {
+            background: #555;
+        }
+
+        /* MOBILE MODE */
+        @media (max-width: 768px) {
+            nav .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
 
 
     </style>
 </head>
 <body>
-    <div id="toast" style="
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #28a745;
-        color: white;
-        padding: 10px 16px;
-        border-radius: 8px;
-        display: none;
-        z-index: 9999;
-        font-size: 14px;
-        ">
-    </div>
-
     <div id="registration" class="modal">
         <div class="modal-content">
             <h2>Registrasi Akun</h2>
@@ -370,6 +404,18 @@
     </header>
     <nav>
         <div class="nav-links">
+            <!-- MOBILE MENU BUTTON -->
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰ Menu</button>
+
+            <!-- MOBILE MENU -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="#" onclick="showHome()">Beranda</a>
+                <a href="#" onclick="showHome()">Produk</a>
+                <a href="#" onclick="showProfile()">Profil</a>
+                <a href="#" onclick="showCart()">Keranjang</a>
+                <a href="#" onclick="showCheckout()">Checkout</a>
+                <a href="#" id="mobile-open-store" onclick="showOpenStore()">Buka Toko</a>
+            </div>
             <a href="#" onclick="showHome()">Beranda</a>
             <a href="#" onclick="showHome()">Produk</a>
             <a href="#" onclick="showProfile()">Profil</a>
@@ -1046,16 +1092,26 @@
             resetReviewForm();
             alert('Ulasan berhasil dikirim!');
         });
-        function updateMenuAccess() {
+            function updateMenuAccess() {
             const openStoreMenu = document.getElementById('open-store-menu');
+            const mobileNav = document.getElementById('mobile-nav');
 
-            // guest atau buyer → sembunyikan
             if (!user || user.role !== 'seller') {
                 openStoreMenu.style.display = 'none';
+
+                // hapus opsi seller di mobile
+                [...mobileNav.options].forEach(opt => {
+                    if (opt.value === 'open-store') opt.style.display = 'none';
+                });
             } else {
                 openStoreMenu.style.display = 'inline-block';
+
+                [...mobileNav.options].forEach(opt => {
+                    if (opt.value === 'open-store') opt.style.display = 'block';
+                });
             }
         }
+
         function upgradeToSeller() {
         if (!user) {
             alert('Silakan login terlebih dahulu');
@@ -1067,17 +1123,11 @@
         updateMenuAccess();
         alert('Akun Anda sekarang menjadi SELLER!');
     }
-    function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.style.display = 'block';
-
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 2000);
+    function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
     }
 
     </script>
 </body>
-
 </html>
