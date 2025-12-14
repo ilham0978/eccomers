@@ -160,10 +160,16 @@
         align-items: center;
         gap: 6px;
         }
+        .cart-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
         .cart-icon {
-            font-size: 18px;
-            line-height: 1;
-        }
+        font-size: 16px;
+        line-height: 1;
+    }
             @media (max-width: 900px) {
             #product-list {
             grid-template-columns: repeat(2, 1fr);
@@ -290,8 +296,9 @@
                 <a href="#" onclick="showProfile()">Profil</a>
                 <a href="#" id="open-store-menu" onclick="showOpenStore()">Buka Toko</a>
                 <a href="#" onclick="showCart()" class="cart-link">
-                    Keranjang 🛒
+                    Keranjang <span class="cart-icon">🛒</span>
                 </a>
+
                 <a href="#" onclick="showCheckout()">Checkout</a>
             </div>
         </div>
@@ -366,7 +373,6 @@
                 <span data-rating="4">★</span>
                 <span data-rating="5">★</span>
             </div>
-            <input type="text" id="reviewer-name" placeholder="Nama Anda" required>
             <textarea id="review-comment" placeholder="Tulis ulasan..." required></textarea>
             <button type="submit">Kirim Ulasan</button>
         </form>
@@ -407,10 +413,6 @@
         <form id="edit-profile-form">
             <label for="edit-name">Nama Lengkap:</label>
             <input type="text" id="edit-name" required>
-            <label for="edit-address">Alamat:</label></br>
-            <textarea id="edit-address" required></textarea>
-            <label for="edit-phone">Nomor HP:</label>
-            <input type="tel" id="edit-phone" required>
             <button type="submit">Simpan Perubahan</button>
             <button type="button" onclick="toggleEditProfile()">Batal</button>
         </form>
@@ -538,8 +540,6 @@
             const form = document.getElementById('edit-profile-form');
             if (form.style.display === 'none' || form.style.display === '') {
                 document.getElementById('edit-name').value = user.name;
-                document.getElementById('edit-address').value = user.address;
-                document.getElementById('edit-phone').value = user.phone;
                 form.style.display = 'block';
             } else {
                 form.style.display = 'none';
@@ -674,19 +674,23 @@
 
 
 
-        function viewProduct(id) {
+            function viewProduct(id) {
             if (!user) {
                 alert('Registrasi dulu!');
                 document.getElementById('registration').style.display = 'flex';
                 return;
             }
+
             currentProduct = products[id];
+
             document.getElementById('product-title').textContent = currentProduct.name;
             document.getElementById('product-image').src = currentProduct.image;
             document.getElementById('product-price').textContent = `Harga: Rp ${currentProduct.price}`;
             document.getElementById('product-description').textContent = currentProduct.description;
-            renderReviews(id);
+
+            renderReviews(currentProduct); // ✅ INI YANG BENAR
             resetReviewForm();
+
             document.getElementById('home').style.display = 'none';
             document.getElementById('cart').style.display = 'none';
             document.getElementById('checkout').style.display = 'none';
@@ -695,31 +699,43 @@
             document.getElementById('open-store').style.display = 'none';
             document.getElementById('profile').style.display = 'none';
         }
+
             function closeRegistration() {
             document.getElementById('registration').style.display = 'none';
         }
-        function renderReviews(productId) {
-            const reviewsDiv = document.getElementById('reviews');
-            reviewsDiv.innerHTML = '';
-            const reviews = JSON.parse(localStorage.getItem(`reviews_${productId}`)) || [];
-            reviews.forEach(review => {
+
+            function renderReviews(product) {
+            const reviewsContainer = document.getElementById('reviews');
+            reviewsContainer.innerHTML = '';
+
+            if (!Array.isArray(product.reviews)) {
+                product.reviews = [];
+            }
+
+            if (product.reviews.length === 0) {
+                reviewsContainer.innerHTML = '<p>Belum ada ulasan.</p>';
+                return;
+            }
+
+            product.reviews.forEach(review => {
                 const div = document.createElement('div');
                 div.className = 'review';
                 div.innerHTML = `
-                    <strong>${review.name}</strong> - <span class="rating-display">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
+                    <strong>${review.name}</strong><br>
+                    Rating: ${'★'.repeat(review.rating)}<br>
                     <p>${review.comment}</p>
                 `;
-                reviewsDiv.appendChild(div);
+                reviewsContainer.appendChild(div);
             });
         }
-        function resetReviewForm() {
-            selectedRating = 0;
-            const stars = document.querySelectorAll('#rating-stars span');
-            stars.forEach(star => star.classList.remove('selected'));
-            document.getElementById('reviewer-name').value = '';
-            document.getElementById('review-comment').value = '';
-        }
 
+
+        function resetReviewForm() {
+        selectedRating = 0;
+        const stars = document.querySelectorAll('#rating-stars span');
+        stars.forEach(star => star.classList.remove('selected'));
+        document.getElementById('review-comment').value = '';
+    }
             document.getElementById('registration-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('reg-name').value.trim();
@@ -902,8 +918,6 @@
         document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
             e.preventDefault();
             user.name = document.getElementById('edit-name').value;
-            user.address = document.getElementById('edit-address').value;
-            user.phone = document.getElementById('edit-phone').value;
             localStorage.setItem('user', JSON.stringify(user));
             toggleEditProfile();
             showProfile();
@@ -958,22 +972,42 @@
                 });
             }
         });
-        document.getElementById('review-form').addEventListener('submit', function(e) {
+            document.getElementById('review-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            if (selectedRating === 0) {
-                alert('Silakan pilih rating bintang.');
+
+            if (!user) {
+                alert('Silakan login untuk memberi ulasan');
                 return;
             }
-            const name = document.getElementById('reviewer-name').value;
+
+            if (!selectedRating) {
+                alert('Pilih rating dulu');
+                return;
+            }
+
             const comment = document.getElementById('review-comment').value;
-            const productId = Object.keys(products).find(id => products[id] === currentProduct);
-            const reviews = JSON.parse(localStorage.getItem(`reviews_${productId}`)) || [];
-            reviews.push({ name, rating: selectedRating, comment });
-            localStorage.setItem(`reviews_${productId}`, JSON.stringify(reviews));
-            renderReviews(productId);
-            resetReviewForm();
-            alert('Ulasan berhasil dikirim!');
+
+            const review = {
+                name: user.name,           // ⭐ DARI PROFIL
+                rating: selectedRating,
+                comment: comment,
+                date: new Date().toLocaleString()
+            };
+
+            if (!currentProduct.reviews) {
+                currentProduct.reviews = [];
+            }
+
+            currentProduct.reviews.push(review);
+
+            renderReviews(currentProduct);
+
+            document.getElementById('review-comment').value = '';
+            selectedRating = 0;
+            resetStars();
         });
+
+
             function updateMenuAccess() {
             const openStoreMenu = document.getElementById('open-store-menu');
             const mobileOpenStore = document.getElementById('mobile-open-store');
@@ -1001,13 +1035,15 @@
         updateMenuAccess();
         alert('Akun Anda sekarang menjadi SELLER!');
     }
-    function toggleMobileMenu() {
-    const menu = document.getElementById('mobileMenu');
-    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-}
+        function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    }
+        function resetStars() {
+        const stars = document.querySelectorAll('#rating-stars span');
+        stars.forEach(star => star.classList.remove('selected'));
+    }
+
 </script>
-
-
-    </script>
 </body>
 </html>
