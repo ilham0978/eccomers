@@ -5,6 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Commerce Sederhana</title>
     <style>
+        /* =====================
+   RESPONSIVE MOBILE
+===================== */
+
+        @media (max-width: 768px) {
+
+            /* HEADER */
+            header h1 {
+                font-size: 18px;
+            }
+
+            /* NAVBAR */
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            nav .nav-links {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            nav a {
+                margin: 0;
+                font-size: 14px;
+            }
+
+            nav button {
+                align-self: flex-end;
+                font-size: 14px;
+            }
+
+            /* CONTAINER */
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            /* PRODUCT GRID */
+            #product-list {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .product img {
+                height: 160px;
+            }
+
+            .product h3 {
+                font-size: 16px;
+            }
+
+            .product p {
+                font-size: 14px;
+            }
+
+            /* BUTTON */
+            button {
+                width: 100%;
+                font-size: 14px;
+                padding: 12px;
+            }
+
+            /* CART */
+            #cart-items li {
+                font-size: 14px;
+            }
+
+            /* CHECKOUT */
+            .checkout-form {
+                max-width: 100%;
+            }
+
+            .checkout-actions {
+                flex-direction: column;
+            }
+
+            /* PROFILE */
+            .profile-info p {
+                font-size: 14px;
+            }
+
+            #address-list li {
+                font-size: 14px;
+            }
+
+            /* MODAL */
+            .modal-content {
+                width: 90%;
+                max-width: 320px;
+            }
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -210,6 +304,21 @@
     </style>
 </head>
 <body>
+    <div id="toast" style="
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #28a745;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        display: none;
+        z-index: 9999;
+        font-size: 14px;
+        ">
+    </div>
+
     <div id="registration" class="modal">
         <div class="modal-content">
             <h2>Registrasi Akun</h2>
@@ -496,11 +605,19 @@
         }
 
         function addToCart(name, price) {
-            cart.push({ name, price });
-            total += price;
-            updateCart();
-            alert(`${name} ditambahkan ke keranjang!`);
+        if (!user) {
+            alert('Registrasi dulu untuk menambahkan ke keranjang!');
+            document.getElementById('registration').style.display = 'flex';
+            return;
         }
+
+        cart.push({ name, price });
+        total += price;
+        updateCart();
+
+        alert(`${name} ditambahkan ke keranjang!`);
+    }
+
 
         function addToCartFromDetail() {
             if (currentProduct) {
@@ -518,7 +635,6 @@
             });
             document.getElementById('total').textContent = total;
             document.getElementById('checkout-total').textContent = total;
-            document.getElementById('cart-checkout-btn').disabled = cart.length === 0;
 
         }
 
@@ -921,6 +1037,15 @@
         localStorage.setItem('user', JSON.stringify(user));
         updateMenuAccess();
         alert('Akun Anda sekarang menjadi SELLER!');
+    }
+    function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 2000);
     }
 
     </script>
