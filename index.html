@@ -299,6 +299,35 @@
     .checkout-actions button {
         flex: 1;
     }
+    /* ===== NAVBAR MOBILE ===== */
+    @media (max-width: 768px) {
+        nav {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+    
+        nav .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+    
+        nav .nav-links a {
+            margin: 0;
+            padding: 8px 12px;
+            background-color: #555;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+    
+        nav button {
+            align-self: center;
+            width: 100%;
+            max-width: 200px;
+        }
+    }
 
 
     </style>
@@ -1050,4 +1079,5 @@
 
     </script>
 </body>
+
 </html>
