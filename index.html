@@ -5,100 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Commerce Sederhana</title>
     <style>
-        /* =====================
-   RESPONSIVE MOBILE
-===================== */
-
-        @media (max-width: 768px) {
-
-            /* HEADER */
-            header h1 {
-                font-size: 18px;
-            }
-
-            /* NAVBAR */
-            nav {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
-
-            nav .nav-links {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            nav a {
-                margin: 0;
-                font-size: 14px;
-            }
-
-            nav button {
-                align-self: flex-end;
-                font-size: 14px;
-            }
-
-            /* CONTAINER */
-            .container {
-                margin: 10px;
-                padding: 15px;
-            }
-
-            /* PRODUCT GRID */
-            #product-list {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .product img {
-                height: 160px;
-            }
-
-            .product h3 {
-                font-size: 16px;
-            }
-
-            .product p {
-                font-size: 14px;
-            }
-
-            /* BUTTON */
-            button {
-                width: 100%;
-                font-size: 14px;
-                padding: 12px;
-            }
-
-            /* CART */
-            #cart-items li {
-                font-size: 14px;
-            }
-
-            /* CHECKOUT */
-            .checkout-form {
-                max-width: 100%;
-            }
-
-            .checkout-actions {
-                flex-direction: column;
-            }
-
-            /* PROFILE */
-            .profile-info p {
-                font-size: 14px;
-            }
-
-            #address-list li {
-                font-size: 14px;
-            }
-
-            /* MODAL */
-            .modal-content {
-                width: 90%;
-                max-width: 320px;
-            }
-        }
-
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -299,35 +205,6 @@
     .checkout-actions button {
         flex: 1;
     }
-        /* ===== NAVBAR MOBILE ===== */
-    @media (max-width: 768px) {
-        nav {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
-        }
-
-        nav .nav-links {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        nav .nav-links a {
-            margin: 0;
-            padding: 8px 12px;
-            background-color: #555;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        nav button {
-            align-self: center;
-            width: 100%;
-            max-width: 200px;
-        }
-    }
     /* === MOBILE NAVBAR === */
         .mobile-menu-btn {
             display: none;
@@ -340,16 +217,17 @@
         }
 
         .mobile-menu {
-            display: none;
-            position: absolute;
-            top: 60px;
-            left: 10px;
-            right: 10px;
-            background: #444;
-            border-radius: 8px;
-            overflow: hidden;
-            z-index: 999;
-        }
+        display: none;
+        position: absolute;
+        top: 60px;
+        left: 10px;
+        right: 10px;
+        background: #333;
+        border-radius: 8px;
+        padding: 10px;
+        flex-direction: column;
+        z-index: 1000;
+    }
 
         .mobile-menu a {
             display: block;
@@ -366,18 +244,15 @@
         .mobile-menu a:hover {
             background: #555;
         }
-
-        /* MOBILE MODE */
         @media (max-width: 768px) {
-            nav .nav-links {
-                display: none;
-            }
-
-            .mobile-menu-btn {
-                display: block;
-            }
+        .nav-links {
+            display: none;
         }
 
+        .mobile-menu-btn {
+            display: block;
+        }
+    }   
 
     </style>
 </head>
@@ -402,32 +277,39 @@
     <header>
         <h1>Toko Online Sederhana</h1>
     </header>
-    <nav>
-        <div class="nav-links">
-            <!-- MOBILE MENU BUTTON -->
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰ Menu</button>
+        <nav>
+        <!-- LEFT -->
+        <div class="nav-left">
+            <!-- MOBILE BUTTON -->
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
 
-            <!-- MOBILE MENU -->
-            <div class="mobile-menu" id="mobileMenu">
+            <!-- DESKTOP LINKS -->
+            <div class="nav-links">
                 <a href="#" onclick="showHome()">Beranda</a>
                 <a href="#" onclick="showHome()">Produk</a>
                 <a href="#" onclick="showProfile()">Profil</a>
-                <a href="#" onclick="showCart()">Keranjang</a>
+                <a href="#" id="open-store-menu" onclick="showOpenStore()">Buka Toko</a>
+                <a href="#" onclick="showCart()" class="cart-link">
+                    Keranjang 🛒
+                </a>
                 <a href="#" onclick="showCheckout()">Checkout</a>
-                <a href="#" id="mobile-open-store" onclick="showOpenStore()">Buka Toko</a>
             </div>
-            <a href="#" onclick="showHome()">Beranda</a>
-            <a href="#" onclick="showHome()">Produk</a>
-            <a href="#" onclick="showProfile()">Profil</a>
-            <a href="#" id="open-store-menu" onclick="showOpenStore()">Buka Toko</a>
-            <a href="#" onclick="showCart()" class="cart-link">
-                <span>Keranjang</span>
-                <span class="cart-icon">🛒</span>
-            </a>
-            <a href="#" onclick="showCheckout()">Checkout</a>
         </div>
-            <button id="reg-button" onclick="handleRegButton()">Logout</button>
+
+        <!-- RIGHT -->
+        <button id="reg-button" onclick="handleRegButton()">Logout</button>
     </nav>
+
+    <!-- MOBILE MENU (DI LUAR nav biar aman) -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#" onclick="showHome(); toggleMobileMenu()">Beranda</a>
+        <a href="#" onclick="showHome(); toggleMobileMenu()">Produk</a>
+        <a href="#" onclick="showProfile(); toggleMobileMenu()">Profil</a>
+        <a href="#" onclick="showCart(); toggleMobileMenu()">Keranjang</a>
+        <a href="#" onclick="showCheckout(); toggleMobileMenu()">Checkout</a>
+        <a href="#" id="mobile-open-store" onclick="showOpenStore(); toggleMobileMenu()">Buka Toko</a>
+    </div>
+
     <div class="container" id="home">
         <h2>Produk Kami</h2>
         <div id="product-list"></div>
@@ -1094,23 +976,19 @@
         });
             function updateMenuAccess() {
             const openStoreMenu = document.getElementById('open-store-menu');
-            const mobileNav = document.getElementById('mobile-nav');
+            const mobileOpenStore = document.getElementById('mobile-open-store');
+
+            if (!openStoreMenu || !mobileOpenStore) return;
 
             if (!user || user.role !== 'seller') {
                 openStoreMenu.style.display = 'none';
-
-                // hapus opsi seller di mobile
-                [...mobileNav.options].forEach(opt => {
-                    if (opt.value === 'open-store') opt.style.display = 'none';
-                });
+                mobileOpenStore.style.display = 'none';
             } else {
                 openStoreMenu.style.display = 'inline-block';
-
-                [...mobileNav.options].forEach(opt => {
-                    if (opt.value === 'open-store') opt.style.display = 'block';
-                });
+                mobileOpenStore.style.display = 'block';
             }
         }
+
 
         function upgradeToSeller() {
         if (!user) {
@@ -1125,8 +1003,10 @@
     }
     function toggleMobileMenu() {
     const menu = document.getElementById('mobileMenu');
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    }
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+}
+</script>
+
 
     </script>
 </body>
