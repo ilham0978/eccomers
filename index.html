@@ -330,7 +330,7 @@
 
     <div class="container" id="cart">
         <h2>Keranjang Belanja</h2>
-        <ul id="cart-items"></ul>
+        <div id="cart-items"></div>
         <p>Total: Rp <span id="total">0</span></p>
         <button onclick="showCheckout()">Checkout</button>
         <button onclick="showHome()">Kembali</button>
@@ -391,7 +391,7 @@
     <form id="add-product-form">
         <input type="text" id="product-name" required>
         <input type="number" id="new-product-price" placeholder="Harga (contoh: 250000)" required min="1">
-        <textarea id="product-description"></textarea>
+        <textarea id="new-product-description"></textarea>
         <input type="file" id="new-product-image" accept="image/*" required>
         <button type="submit">Tambah Produk</button>
     </form>
@@ -426,7 +426,7 @@
     </div>
 
     <script>
-        let cart = [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let total = 0;
         let currentProduct = null;
         let selectedRating = 0;
@@ -443,13 +443,8 @@
         }
 
         function showProducts() {
-            document.getElementById('home').style.display = 'none';
+            hideAllPages();
             document.getElementById('products').style.display = 'block';
-            document.getElementById('cart').style.display = 'none';
-            document.getElementById('checkout').style.display = 'none';
-            document.getElementById('product-detail').style.display = 'none';
-            document.getElementById('open-store').style.display = 'none';
-            document.getElementById('profile').style.display = 'none';
         }
 
         // Load produk dari localStorage
@@ -472,7 +467,7 @@
                     <h3>${product.name}</h3>
                     <p>Harga: Rp ${product.price}</p>
                     <button onclick="viewProduct(${id})">Lihat Detail</button>
-                    <button onclick="addToCart('${product.name}', ${product.price})">Tambah ke Keranjang</button>
+                    <button onclick="addToCart(${id})">Tambah ke Keranjang</button>
                 `;
                 productList.appendChild(div);
             });
@@ -536,13 +531,7 @@
             }
 
             renderProfileTransactions();
-
-            document.getElementById('home').style.display = 'none';
-            document.getElementById('cart').style.display = 'none';
-            document.getElementById('checkout').style.display = 'none';
-            document.getElementById('product-detail').style.display = 'none';
-            document.getElementById('registration').style.display = 'none';
-            document.getElementById('open-store').style.display = 'none';
+            hideAllPages();
             document.getElementById('profile').style.display = 'block';
         }
 
@@ -571,51 +560,106 @@
             document.getElementById('open-store').style.display = 'block';
         }
 
-        function addToCart(name, price) {
-        if (!user) {
-            alert('Registrasi dulu untuk menambahkan ke keranjang!');
-            document.getElementById('registration').style.display = 'flex';
-            return;
+       function addToCart(id) {
+            const product = products[id];
+            if (!product) return;
+            const existing = cart.find(item => item.id === id);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({
+                    id: id,
+                    name: product.name,
+                    price: product.price,
+                    qty: 1,
+                    selected: true
+                });
+            }
+            saveCart();
+            updateCart();
+            alert(`${product.name} berhasil ditambahkan ke keranjang`);
         }
 
-        cart.push({ name, price });
-        total += price;
-        updateCart();
 
-        saveCart();      // ⬅️ TAMBAHKAN
-        updateCart();
-
-        alert(`${name} ditambahkan ke keranjang!`);
-    }
 
 
         function addToCartFromDetail() {
-            if (currentProduct) {
-                addToCart(currentProduct.name, currentProduct.price);
+            // 1. wajib login
+            if (!user) {
+                alert('Silakan registrasi / login dulu');
+                hideAllPages();
+                document.getElementById('registration').style.display = 'flex';
+                return;
             }
+
+            // 2. ambil produk yang sedang dibuka
+            if (!window.currentProduct) {
+                alert('Produk tidak ditemukan');
+                return;
+            }
+
+            const product = window.currentProduct;
+
+            // 3. cek apakah produk sudah ada di keranjang
+            const existing = cart.find(item => item.id === product.id);
+
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    qty: 1,
+                    selected: true
+                });
+            }
+
+            // 4. simpan & update
+            saveCart();
+            updateCart();
+
+            // 5. alert berhasil
+            alert('Produk berhasil ditambahkan ke keranjang 🛒');
         }
+
+
 
         function updateCart() {
-            const cartItems = document.getElementById('cart-items');
-            cartItems.innerHTML = '';
-            cart.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = `${item.name} - Rp ${item.price}`;
-                cartItems.appendChild(li);
-            });
-            document.getElementById('total').textContent = total;
-            document.getElementById('checkout-total').textContent = total;
+            const container = document.getElementById('cart-items');
+            container.innerHTML = '';
+            total = 0;
 
+            cart.forEach((item, index) => {
+                if (item.selected) {
+                    total += item.price * item.qty;
+                }
+
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <input type="checkbox" ${item.selected ? 'checked' : ''} 
+                            onchange="toggleSelect(${index})">
+
+                        <span>${item.name}</span>
+                        <span>Rp ${item.price}</span>
+
+                        <button onclick="decreaseQty(${index})">−</button>
+                        <span>${item.qty}</span>
+                        <button onclick="increaseQty(${index})">+</button>
+
+                        <button onclick="removeItem(${index})">Hapus</button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('total').innerText = total;
+            saveCart();
         }
 
+
         function showHome() {
+                hideAllPages();
                 document.getElementById('home').style.display = 'block';
-                document.getElementById('products').style.display = 'none';
-                document.getElementById('cart').style.display = 'none';
-                document.getElementById('checkout').style.display = 'none';
-                document.getElementById('product-detail').style.display = 'none';
-                document.getElementById('open-store').style.display = 'none';
-                document.getElementById('profile').style.display = 'none';
             }
 
 
@@ -625,43 +669,57 @@
                 document.getElementById('registration').style.display = 'flex';
                 return;
             }
-            document.getElementById('home').style.display = 'none';
+            hideAllPages();
             document.getElementById('cart').style.display = 'block';
-            document.getElementById('checkout').style.display = 'none';
-            document.getElementById('product-detail').style.display = 'none';
-            document.getElementById('registration').style.display = 'none';
-            document.getElementById('open-store').style.display = 'none';
-            document.getElementById('profile').style.display = 'none';
         }
 
             function showCheckout() {
-            if (!user) {
-                alert('Registrasi dulu!');
-                document.getElementById('registration').style.display = 'flex';
-                return;
+                if (!user) {
+                    alert('Registrasi dulu!');
+                    document.getElementById('registration').style.display = 'flex';
+                    return;
+                }
+                const selectedItems = cart.filter(item => item.selected);
+                if (selectedItems.length === 0) {
+                    alert('Pilih minimal 1 produk untuk checkout!');
+                    return;
+                }
+                // auto isi data user
+                document.getElementById('checkout-name').value = user.name || '';
+                document.getElementById('checkout-phone').value = user.phone || '';
+                renderCheckoutAddresses();
+                let checkoutTotal = 0;
+                selectedItems.forEach(item => {
+                    checkoutTotal += item.price * item.qty;
+                });
+                hideAllPages();
+                document.getElementById('checkout').style.display = 'block';
             }
 
-            if (cart.length === 0) {
-                alert('Keranjang masih kosong!');
-                return;
-            }
 
-            // auto isi data user
-            document.getElementById('checkout-name').value = user.name || '';
-            document.getElementById('checkout-phone').value = user.phone || '';
 
-            renderCheckoutAddresses();
-
-            document.getElementById('home').style.display = 'none';
-            document.getElementById('cart').style.display = 'none';
-            document.getElementById('checkout').style.display = 'block';
-            document.getElementById('product-detail').style.display = 'none';
-            document.getElementById('registration').style.display = 'none';
-            document.getElementById('open-store').style.display = 'none';
-            document.getElementById('profile').style.display = 'none';
+        function increaseQty(i) {
+            cart[i].qty++;
+            updateCart();
         }
 
+        function decreaseQty(i) {
+            if (cart[i].qty > 1) {
+                cart[i].qty--;
+            } else {
+                cart.splice(i, 1);
+            }
+            updateCart();
+        }
 
+        function removeItem(i) {
+            cart.splice(i, 1);
+            updateCart();
+        }
+        function toggleSelect(i) {
+            cart[i].selected = !cart[i].selected;
+            updateCart();
+        }
 
             function renderCheckoutAddresses() {
             const select = document.getElementById('checkout-address-select');
@@ -684,30 +742,35 @@
 
 
             function viewProduct(id) {
-            if (!user) {
-                alert('Registrasi dulu!');
-                document.getElementById('registration').style.display = 'flex';
-                return;
+                if (!user) {
+                    alert('Registrasi dulu!');
+                    document.getElementById('registration').style.display = 'flex';
+                    return;
+                }
+
+                const product = products[id];
+                if (!product) {
+                    alert('Produk tidak ditemukan');
+                    return;
+                }
+
+                // simpan produk aktif
+                currentProduct = {
+                    id: id,
+                    ...product
+                };
+
+                // isi halaman detail
+                document.getElementById('product-title').innerText = product.name;
+                document.getElementById('product-image').src = product.image;
+                document.getElementById('product-price').innerText = `Harga: Rp ${product.price}`;
+                document.getElementById('product-description').innerText = product.description || '';
+
+                // tampilkan halaman detail
+                hideAllPages();
+                document.getElementById('product-detail').style.display = 'block';
             }
 
-            currentProduct = products[id];
-
-            document.getElementById('product-title').textContent = currentProduct.name;
-            document.getElementById('product-image').src = currentProduct.image;
-            document.getElementById('product-price').textContent = `Harga: Rp ${currentProduct.price}`;
-            document.getElementById('product-description').textContent = currentProduct.description;
-
-            renderReviews(currentProduct); // ✅ INI YANG BENAR
-            resetReviewForm();
-
-            document.getElementById('home').style.display = 'none';
-            document.getElementById('cart').style.display = 'none';
-            document.getElementById('checkout').style.display = 'none';
-            document.getElementById('product-detail').style.display = 'block';
-            document.getElementById('registration').style.display = 'none';
-            document.getElementById('open-store').style.display = 'none';
-            document.getElementById('profile').style.display = 'none';
-        }
 
             function closeRegistration() {
             document.getElementById('registration').style.display = 'none';
@@ -778,7 +841,8 @@
 
     const name = document.getElementById('product-name').value;
     const price = Number(document.getElementById('new-product-price').value);
-    const description = document.getElementById('product-description').value;
+    const description = document.getElementById('new-product-description').value;
+
 
     if (!price || price <= 0) {
         alert('Harga harus diisi dan lebih dari 0');
@@ -859,69 +923,43 @@
 
 
             function renderAddresses() {
-            const list = document.getElementById('address-list');
-            list.innerHTML = '';
-            if (!user.addresses || user.addresses.length === 0) {
-                list.innerHTML = '<li>Belum ada alamat</li>';
-                return;
-            }
-            user.addresses.forEach(addr => {
-                const li = document.createElement('li');
-                li.textContent = `${addr.label}: ${addr.detail}`;
-                list.appendChild(li);
+                    const list = document.getElementById('address-list');
+                    list.innerHTML = '';
+                    if (!user.addresses || user.addresses.length === 0) {
+                        list.innerHTML = '<li>Belum ada alamat</li>';
+                        return;
+                    }
+                    user.addresses.forEach(addr => {
+                        const li = document.createElement('li');
+                        li.textContent = `${addr.label}: ${addr.detail}`;
+                        list.appendChild(li);
+                    });
+                }
+
+                document.getElementById('address-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const label = document.getElementById('address-label').value.trim();
+                const detail = document.getElementById('address-detail').value.trim();
+
+                if (!label || !detail) {
+                    alert('Lengkapi alamat');
+                    return;
+                }
+
+                if (!user.addresses) user.addresses = [];
+
+                user.addresses.push({
+                    id: Date.now(),
+                    label,
+                    detail
+                });
+                localStorage.setItem('user', JSON.stringify(user));
+
+                renderAddresses();
+                e.target.reset();
+                document.getElementById('address-form').style.display = 'none';
             });
-        }
-
-        document.getElementById('address-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const label = document.getElementById('address-label').value.trim();
-        const detail = document.getElementById('address-detail').value.trim();
-
-        if (!label || !detail) {
-            alert('Lengkapi alamat');
-            return;
-        }
-
-        if (!user.addresses) user.addresses = [];
-
-        user.addresses.push({
-            id: Date.now(),
-            label,
-            detail
-        });
-        localStorage.setItem('user', JSON.stringify(user));
-
-        renderAddresses();
-        e.target.reset();
-        document.getElementById('address-form').style.display = 'none';
-    });
-
-        document.getElementById('address-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const label = document.getElementById('address-label').value.trim();
-        const detail = document.getElementById('address-detail').value.trim();
-
-        if (!label || !detail) {
-            alert('Lengkapi alamat');
-            return;
-        }
-
-        if (!user.addresses) user.addresses = [];
-
-        user.addresses.push({
-            id: Date.now(),
-            label,
-            detail
-        });
-
-        localStorage.setItem('user', JSON.stringify(user));
-
-        renderAddresses();
-        e.target.reset();
-        document.getElementById('address-form').style.display = 'none';
-    });
         function toggleAddressForm() {
         const form = document.getElementById('address-form');
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
@@ -1069,6 +1107,24 @@
         cart = JSON.parse(localStorage.getItem('cart')) || [];
         total = Number(localStorage.getItem('total')) || 0;
     }
+    function hideAllPages() {
+        const pages = [
+            'home',
+            'cart',
+            'products',
+            'checkout',
+            'product-detail',
+            'open-store',
+            'profile'
+        ];
+
+        pages.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        document.getElementById('registration').style.display = 'none';
+    }
+
 
 </script>
 </body>
