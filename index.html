@@ -170,6 +170,22 @@
         font-size: 16px;
         line-height: 1;
     }
+        .cart-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .cart-item button {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+    .cart-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+
             @media (max-width: 900px) {
             #product-list {
             grid-template-columns: repeat(2, 1fr);
@@ -213,7 +229,7 @@
     }
     /* === MOBILE NAVBAR === */
         .mobile-menu-btn {
-            display: none;
+            display: none; 
             background: #666;
             color: #fff;
             border: none;
@@ -224,6 +240,7 @@
 
         .mobile-menu {
         display: none;
+        pointer-events: none;   
         position: absolute;
         top: 60px;
         left: 10px;
@@ -233,6 +250,10 @@
         padding: 10px;
         flex-direction: column;
         z-index: 1000;
+    }
+    .mobile-menu.show {
+        display: flex;
+        pointer-events: auto;
     }
 
         .mobile-menu a {
@@ -1091,9 +1112,9 @@
         alert('Akun Anda sekarang menjadi SELLER!');
     }
         function toggleMobileMenu() {
-        const menu = document.getElementById('mobileMenu');
-        menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
-    }
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('show');
+        }
         function resetStars() {
         const stars = document.querySelectorAll('#rating-stars span');
         stars.forEach(star => star.classList.remove('selected'));
