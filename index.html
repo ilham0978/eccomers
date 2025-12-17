@@ -473,6 +473,7 @@
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let total = 0;
         let currentProduct = null;
+        let currentProductId = null;
         let selectedRating = 0;
         let user = null;
         let products = JSON.parse(localStorage.getItem('products'));
@@ -640,17 +641,16 @@
                 return;
             }
 
-            // 2. ambil produk yang sedang dibuka
-            if (!window.currentProduct) {
+            if (currentProductId === null) {
                 alert('Produk tidak ditemukan');
                 return;
             }
-
-            const product = window.currentProduct;
-
-            // 3. cek apakah produk sudah ada di keranjang
-            const existing = cart.find(item => item.id === product.id);
-
+             const product = products[currentProductId];
+                if (!product) {
+                    alert('Produk tidak ditemukan');
+                    return;
+                }
+            const existing = cart.find(item => item.id === currentProductId);
             if (existing) {
                 existing.qty += 1;
             } else {
@@ -663,11 +663,8 @@
                 });
             }
 
-            // 4. simpan & update
             saveCart();
             updateCart();
-
-            // 5. alert berhasil
             alert('Produk berhasil ditambahkan ke keranjang 🛒');
         }
 
@@ -795,14 +792,13 @@
                 return;
             }
 
-            // 2️⃣ pastikan produk aktif
-            if (!currentProduct) {
+            if (currentProductId === null) {
                 alert('Produk tidak ditemukan');
                 return;
             }
 
-            // 3️⃣ masukkan ke keranjang
-            const existing = cart.find(item => item.id === currentProduct.id);
+            const product = products[currentProductId];
+            const existing = cart.find(item => item.id === currentProductId);
 
             if (existing) {
                 existing.qty += 1;
@@ -817,11 +813,8 @@
                 });
             }
 
-            // 4️⃣ simpan keranjang
             saveCart();
             updateCart();
-
-            // 5️⃣ langsung ke checkout
             showCheckout();
         }
 
@@ -838,12 +831,7 @@
                     alert('Produk tidak ditemukan');
                     return;
                 }
-
-                // simpan produk aktif
-                currentProduct = {
-                    id: id,
-                    ...product
-                };
+                currentProductId = id;
 
                 // isi halaman detail
                 document.getElementById('product-title').innerText = product.name;
