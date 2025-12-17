@@ -9,16 +9,16 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #f1f5f9;
         }
         header {
-            background-color: #333;
-            color: white;
+            background-color: #02a9eb;
+            color: rgb(255, 255, 255);
             padding: 10px;
             text-align: center;
         }
         nav {
-            background-color: #444;
+            background-color: #0291ca;
             padding: 10px;
             display: flex;
             justify-content: space-between;
@@ -28,12 +28,12 @@
             display: flex;
         }
         nav a {
-            color: white;
+            color: rgb(255, 255, 255);
             margin: 0 15px;
             text-decoration: none;
         }
         nav button {
-            background-color: #666;
+            background-color: #0291ca;
             color: white;
             border: none;
             padding: 5px 10px;
@@ -41,7 +41,7 @@
             border-radius: 5px;
         }
         nav button:hover {
-            background-color: #888;
+            background-color: #04729d;
         }
         .container {
             max-width: 1200px;
@@ -71,7 +71,7 @@
             object-fit: cover;
         }
         button {
-            background-color: #28a745;
+            background-color: #00b8d4;
             color: white;
             border: none;
             padding: 10px;
@@ -80,7 +80,7 @@
             margin: 5px;
         }
         button:hover {
-            background-color: #218838;
+            background-color: #016480;
         }
         #cart, #product-detail, #checkout, #registration, #open-store, #profile {
             display: none;
@@ -655,7 +655,7 @@
                 existing.qty += 1;
             } else {
                 cart.push({
-                    id: product.id,
+                    id: currentProductId,
                     name: product.name,
                     price: product.price,
                     qty: 1,
@@ -805,9 +805,9 @@
                 existing.selected = true;
             } else {
                 cart.push({
-                    id: currentProduct.id,
-                    name: currentProduct.name,
-                    price: currentProduct.price,
+                    id: currentProductId,
+                    name: product.name,    
+                    price: product.price,
                     qty: 1,
                     selected: true
                 });
