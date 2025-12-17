@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Commerce Sederhana</title>
+    <title>Aplikasi Eccomers</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -281,7 +281,7 @@
         </div>
     </div>
     <header>
-        <h1>Toko Online Sederhana</h1>
+        <h1>Faints Store</h1>
     </header>
         <nav>
         <!-- LEFT -->
@@ -292,7 +292,7 @@
             <!-- DESKTOP LINKS -->
             <div class="nav-links">
                 <a href="#" onclick="showHome()">Beranda</a>
-                <a href="#" onclick="showHome()">Produk</a>
+                <a href="#" onclick="showProducts()">Produk</a>
                 <a href="#" onclick="showProfile()">Profil</a>
                 <a href="#" id="open-store-menu" onclick="showOpenStore()">Buka Toko</a>
                 <a href="#" onclick="showCart()" class="cart-link">
@@ -310,17 +310,24 @@
     <!-- MOBILE MENU (DI LUAR nav biar aman) -->
     <div class="mobile-menu" id="mobileMenu">
         <a href="#" onclick="showHome(); toggleMobileMenu()">Beranda</a>
-        <a href="#" onclick="showHome(); toggleMobileMenu()">Produk</a>
+        <a href="#" onclick="showProducts(); toggleMobileMenu()">Produk</a>
         <a href="#" onclick="showProfile(); toggleMobileMenu()">Profil</a>
         <a href="#" onclick="showCart(); toggleMobileMenu()">Keranjang</a>
         <a href="#" onclick="showCheckout(); toggleMobileMenu()">Checkout</a>
         <a href="#" id="mobile-open-store" onclick="showOpenStore(); toggleMobileMenu()">Buka Toko</a>
     </div>
-
     <div class="container" id="home">
+        <h1>Selamat Datang di Faints Store</h1>
+        <p>Tempat belanja makanan favorit kamu 🍽️</p>
+
+        <button onclick="showProducts()">Lihat Produk</button>
+    </div>
+
+    <div class="container" id="products" style="display:none;">
         <h2>Produk Kami</h2>
         <div id="product-list"></div>
     </div>
+
     <div class="container" id="cart">
         <h2>Keranjang Belanja</h2>
         <ul id="cart-items"></ul>
@@ -435,6 +442,15 @@
             localStorage.setItem('products', JSON.stringify(products));
         }
 
+        function showProducts() {
+            document.getElementById('home').style.display = 'none';
+            document.getElementById('products').style.display = 'block';
+            document.getElementById('cart').style.display = 'none';
+            document.getElementById('checkout').style.display = 'none';
+            document.getElementById('product-detail').style.display = 'none';
+            document.getElementById('open-store').style.display = 'none';
+            document.getElementById('profile').style.display = 'none';
+        }
 
         // Load produk dari localStorage
         function loadProducts() {
@@ -462,16 +478,10 @@
             });
         }
 
-        // Cek registrasi saat load dan update tombol
-          //  window.onload = function () {
-            //user = JSON.parse(localStorage.getItem('user'));
-            //updateRegButton();
-            //updateMenuAccess(); // ⬅️ PENTING
-            //loadProducts();
-            //showHome();
-        //};
         window.onload = function () {
         user = JSON.parse(localStorage.getItem('user'));
+        loadCart();          // ⬅️ WAJIB
+        updateCart();   
         updateRegButton();
         updateMenuAccess();
         loadProducts();
@@ -572,6 +582,9 @@
         total += price;
         updateCart();
 
+        saveCart();      // ⬅️ TAMBAHKAN
+        updateCart();
+
         alert(`${name} ditambahkan ke keranjang!`);
     }
 
@@ -596,19 +609,15 @@
         }
 
         function showHome() {
-            if (!user) {
-                alert('Registrasi dulu!');
-                document.getElementById('registration').style.display = 'flex';
-                return;
+                document.getElementById('home').style.display = 'block';
+                document.getElementById('products').style.display = 'none';
+                document.getElementById('cart').style.display = 'none';
+                document.getElementById('checkout').style.display = 'none';
+                document.getElementById('product-detail').style.display = 'none';
+                document.getElementById('open-store').style.display = 'none';
+                document.getElementById('profile').style.display = 'none';
             }
-            document.getElementById('home').style.display = 'block';
-            document.getElementById('cart').style.display = 'none';
-            document.getElementById('checkout').style.display = 'none';
-            document.getElementById('product-detail').style.display = 'none';
-            document.getElementById('registration').style.display = 'none';
-            document.getElementById('open-store').style.display = 'none';
-            document.getElementById('profile').style.display = 'none';
-        }
+
 
         function showCart() {
             if (!user) {
@@ -841,6 +850,9 @@
 
             cart = [];
             total = 0;
+            // HAPUS DATA KERANJANG DI localStorage
+            localStorage.removeItem('cart');
+            localStorage.removeItem('total')
             updateCart();
             showHome();
         });
@@ -1000,7 +1012,12 @@
 
             currentProduct.reviews.push(review);
 
-            renderReviews(currentProduct);
+                // SIMPAN KE localStorage
+                localStorage.setItem('products', JSON.stringify(products));
+
+                renderReviews(currentProduct);
+                resetReviewForm();
+                            alert('Ulasan berhasil dikirim!');
 
             document.getElementById('review-comment').value = '';
             selectedRating = 0;
@@ -1042,6 +1059,15 @@
         function resetStars() {
         const stars = document.querySelectorAll('#rating-stars span');
         stars.forEach(star => star.classList.remove('selected'));
+    }
+    function saveCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem('total', total);
+    }
+
+    function loadCart() {
+        cart = JSON.parse(localStorage.getItem('cart')) || [];
+        total = Number(localStorage.getItem('total')) || 0;
     }
 
 </script>
