@@ -410,8 +410,9 @@
         <img id="product-image" src="" alt="" style="width: 300px; height: 200px; object-fit: cover;">
         <p id="product-price"></p>
         <p id="product-description"></p>
-        <button onclick="addToCartFromDetail()">Tambah ke Keranjang</button>
-        <button onclick="showHome()">Kembali</button>
+        <button onclick="addToCartFromDetail()">ambah ke KeranjaTng</button>
+        <button onclick="checkoutFromDetail()">Checkout</button>
+        <button onclick="showProducts()">Kembali</button>
         <h3>Ulasan</h3>
         <div id="reviews"></div>
         <form id="review-form">
@@ -505,13 +506,17 @@
                 const product = products[id];
                 const div = document.createElement('div');
                 div.className = 'product';
+                div.onclick = () => viewProduct(id);
                 div.innerHTML = `
                     <img src="${product.image || 'https://picsum.photos/300/200'}" alt="${product.name}">
                     <h3>${product.name}</h3>
                     <p>Harga: Rp ${product.price}</p>
-                    <button onclick="viewProduct(${id})">Lihat Detail</button>
-                    <button onclick="addToCart(${id})">Tambah ke Keranjang</button>
+
+                    <button onclick="event.stopPropagation(); addToCart(${id})">
+                        Tambah ke Keranjang
+                    </button>
                 `;
+
                 productList.appendChild(div);
             });
         }
@@ -764,7 +769,7 @@
             updateCart();
         }
 
-            function renderCheckoutAddresses() {
+        function renderCheckoutAddresses() {
             const select = document.getElementById('checkout-address-select');
             select.innerHTML = '';
 
@@ -782,13 +787,50 @@
             });
         }
 
+        function checkoutFromDetail() {
+            // 1️⃣ wajib login
+            if (!user) {
+                alert('Silakan login / registrasi dulu');
+                document.getElementById('registration').style.display = 'flex';
+                return;
+            }
+
+            // 2️⃣ pastikan produk aktif
+            if (!currentProduct) {
+                alert('Produk tidak ditemukan');
+                return;
+            }
+
+            // 3️⃣ masukkan ke keranjang
+            const existing = cart.find(item => item.id === currentProduct.id);
+
+            if (existing) {
+                existing.qty += 1;
+                existing.selected = true;
+            } else {
+                cart.push({
+                    id: currentProduct.id,
+                    name: currentProduct.name,
+                    price: currentProduct.price,
+                    qty: 1,
+                    selected: true
+                });
+            }
+
+            // 4️⃣ simpan keranjang
+            saveCart();
+            updateCart();
+
+            // 5️⃣ langsung ke checkout
+            showCheckout();
+        }
 
 
-            function viewProduct(id) {
-                if (!user) {
-                    alert('Registrasi dulu!');
-                    document.getElementById('registration').style.display = 'flex';
-                    return;
+        function viewProduct(id) {
+            if (!user) {
+                alert('Registrasi dulu!');
+                document.getElementById('registration').style.display = 'flex';
+                return;
                 }
 
                 const product = products[id];
@@ -1004,28 +1046,28 @@
                 document.getElementById('address-form').style.display = 'none';
             });
         function toggleAddressForm() {
-        const form = document.getElementById('address-form');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
-
-        document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            user.name = document.getElementById('edit-name').value;
-            localStorage.setItem('user', JSON.stringify(user));
-            toggleEditProfile();
-            showProfile();
-            alert('Profil berhasil diperbarui!');
-        });
-            function renderProfileTransactions() {
-            const container = document.getElementById('profile-transactions');
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-
-            container.innerHTML = '';
-
-            if (transactions.length === 0) {
-                container.innerHTML = '<p>Belum ada pesanan.</p>';
-                return;
+                const form = document.getElementById('address-form');
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
             }
+
+                document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                user.name = document.getElementById('edit-name').value;
+                localStorage.setItem('user', JSON.stringify(user));
+                toggleEditProfile();
+                showProfile();
+                alert('Profil berhasil diperbarui!');
+            });
+                function renderProfileTransactions() {
+                const container = document.getElementById('profile-transactions');
+                const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
+                container.innerHTML = '';
+
+                if (transactions.length === 0) {
+                    container.innerHTML = '<p>Belum ada pesanan.</p>';
+                    return;
+                }
 
             transactions.forEach((trx, index) => {
                 const div = document.createElement('div');
