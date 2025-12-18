@@ -301,7 +301,7 @@
             grid-column: 1 / -1;
             background: #dc3545;
         }
-    }   
+    }
 
     </style>
 </head>
@@ -362,6 +362,12 @@
     <div class="container" id="home">
         <h1>Selamat Datang di Faints Store</h1>
         <p>Tempat belanja makanan favorit kamu 🍽️</p>
+        <p style="margin-top:15px; color:#555; line-height:1.6;">
+            <strong>Faints Store</strong> adalah aplikasi e-commerce yang dikembangkan sebagai
+            proyek pembelajaran.  
+            Nama <strong>Faints</strong> diambil dari gabungan huruf awal nama anggota kelompok,
+            yang melambangkan kerja sama, kreativitas, dan kebersamaan dalam membangun aplikasi ini.
+        </p>
 
         <button onclick="showProducts()">Lihat Produk</button>
     </div>
@@ -428,18 +434,49 @@
             <button type="submit">Kirim Ulasan</button>
         </form>
     </div>
-    <div class="container" id="open-store">
-    <h2>Buka Toko</h2>
-    <p>Tambahkan produk baru untuk dijual.</p>
 
-    <form id="add-product-form">
-        <input type="text" id="product-name" required>
-        <input type="number" id="new-product-price" placeholder="Harga (contoh: 250000)" required min="1">
-        <textarea id="new-product-description"></textarea>
-        <input type="file" id="new-product-image" accept="image/*" required>
-        <button type="submit">Tambah Produk</button>
-    </form>
-</div>
+        <div class="container" id="open-store">
+            <h2>Buka Toko</h2>
+            <p>Tambahkan produk baru untuk dijual.</p>
+
+            <form id="add-product-form">
+                <label for="product-name">Nama Produk</label>
+                <input 
+                    type="text" 
+                    id="product-name" 
+                    placeholder="Contoh: Salad Buah Segar"
+                    required
+                >
+
+                <label for="new-product-price">Harga Produk</label>
+                <input 
+                    type="number" 
+                    id="new-product-price" 
+                    placeholder="Contoh: 25000"
+                    required 
+                    min="1"
+                >
+                <p><small>Masukkan harga tanpa titik atau koma</small></p>
+
+                <label for="new-product-description">Deskripsi Produk</label>
+                <textarea 
+                    id="new-product-description" 
+                    placeholder="Jelaskan produk secara singkat"
+                ></textarea>
+
+                <label for="new-product-image">Gambar Produk</label>
+                <input 
+                    type="file" 
+                    id="new-product-image" 
+                    accept="image/*" 
+                    required
+                >
+                <small>Format JPG / PNG, maksimal 2MB</small>
+
+                <button type="submit">Tambah Produk</button>
+            </form>
+        </div>
+
 
     <div class="container" id="profile">
         <h2>Profil Saya</h2>
@@ -1211,5 +1248,6 @@
 
 
 </script>
+
 </body>
 </html>
