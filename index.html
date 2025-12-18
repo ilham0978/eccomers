@@ -380,7 +380,7 @@
     </div>
     <div class="container" id="checkout">
     <h2>Checkout</h2>
-    <p>Total Pembelian: Rp <span id="checkout-total">0</span></p>
+    <p>Total Pembelian:<span id="checkout-total">0</span></p>
 
     <form id="checkout-form" class="checkout-form">
         <div class="form-group">
@@ -448,7 +448,14 @@
         </div>
         <h3>Alamat Saya</h3>
         <ul id="address-list"></ul>
+        <button onclick="toggleEditProfile()">Edit Profil</button>
         <button onclick="toggleAddressForm()">Tambah Alamat</button>
+        <form id="edit-profile-form">
+            <label for="edit-name">Nama Lengkap:</label>
+            <input type="text" id="edit-name" required>
+            <button type="submit">Simpan Perubahan</button>
+            <button type="button" onclick="toggleEditProfile()">Batal</button>
+        </form>
 
         <form id="address-form" style="display:none; margin-top:10px;">
             <input type="text" id="address-label" placeholder="Nama Tempat/Kota" required>
@@ -459,14 +466,7 @@
         <h3>Pesanan Saya</h3>
         <div id="profile-transactions"></div>
         <button onclick="upgradeToSeller()">Daftar Jadi Seller</button>
-        <button onclick="toggleEditProfile()">Edit Profil</button>
         <button onclick="showHome()">Kembali</button>
-        <form id="edit-profile-form">
-            <label for="edit-name">Nama Lengkap:</label>
-            <input type="text" id="edit-name" required>
-            <button type="submit">Simpan Perubahan</button>
-            <button type="button" onclick="toggleEditProfile()">Batal</button>
-        </form>
     </div>
 
     <script>
@@ -724,22 +724,33 @@
                     document.getElementById('registration').style.display = 'flex';
                     return;
                 }
+
                 const selectedItems = cart.filter(item => item.selected);
                 if (selectedItems.length === 0) {
                     alert('Pilih minimal 1 produk untuk checkout!');
                     return;
                 }
+
                 // auto isi data user
                 document.getElementById('checkout-name').value = user.name || '';
                 document.getElementById('checkout-phone').value = user.phone || '';
-                renderCheckoutAddresses();
+
+                // ✅ HITUNG TOTAL DULU
                 let checkoutTotal = 0;
                 selectedItems.forEach(item => {
                     checkoutTotal += item.price * item.qty;
                 });
+
+                // ✅ BARU TAMPILKAN
+                document.getElementById('checkout-total').innerText =
+                    'Rp ' + checkoutTotal.toLocaleString('id-ID');
+
+                renderCheckoutAddresses();
+
                 hideAllPages();
                 document.getElementById('checkout').style.display = 'block';
             }
+
 
 
 
