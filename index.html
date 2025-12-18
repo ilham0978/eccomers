@@ -637,18 +637,21 @@
                 document.getElementById('registration').style.display = 'flex';
                 return;
             }
-            document.getElementById('home').style.display = 'none';
-            document.getElementById('cart').style.display = 'none';
-            document.getElementById('checkout').style.display = 'none';
-            document.getElementById('product-detail').style.display = 'none';
-            document.getElementById('registration').style.display = 'none';
-            document.getElementById('profile').style.display = 'none';
+            hideAllPages();
             document.getElementById('open-store').style.display = 'block';
         }
 
-       function addToCart(id) {
+      function addToCart(id) {
+            // 🔐 VALIDASI LOGIN
+            if (!user) {
+                alert('Silakan registrasi / login dulu untuk menambahkan ke keranjang');
+                document.getElementById('registration').style.display = 'flex';
+                return;
+            }
+
             const product = products[id];
             if (!product) return;
+
             const existing = cart.find(item => item.id === id);
             if (existing) {
                 existing.qty++;
@@ -661,19 +664,20 @@
                     selected: true
                 });
             }
+
             saveCart();
             updateCart();
-            alert(`${product.name} berhasil ditambahkan ke keranjang`);
+            alert(`${product.name} berhasil ditambahkan ke keranjang 🛒`);
         }
 
 
 
 
+
         function addToCartFromDetail() {
-            // 1. wajib login
+            // 🔒 wajib login
             if (!user) {
                 alert('Silakan registrasi / login dulu');
-                hideAllPages();
                 document.getElementById('registration').style.display = 'flex';
                 return;
             }
@@ -682,14 +686,17 @@
                 alert('Produk tidak ditemukan');
                 return;
             }
-             const product = products[currentProductId];
-                if (!product) {
-                    alert('Produk tidak ditemukan');
-                    return;
-                }
+
+            const product = products[currentProductId];
+            if (!product) {
+                alert('Produk tidak ditemukan');
+                return;
+            }
+
             const existing = cart.find(item => item.id === currentProductId);
+
             if (existing) {
-                existing.qty += 1;
+                existing.qty++;
             } else {
                 cart.push({
                     id: currentProductId,
@@ -704,6 +711,7 @@
             updateCart();
             alert('Produk berhasil ditambahkan ke keranjang 🛒');
         }
+
 
 
 
@@ -868,11 +876,6 @@
 
 
         function viewProduct(id) {
-            if (!user) {
-                alert('Registrasi dulu!');
-                document.getElementById('registration').style.display = 'flex';
-                return;
-                }
 
                 const product = products[id];
                 if (!product) {
