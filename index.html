@@ -99,7 +99,7 @@
             margin-top: 10px;
         }
         .review strong {
-            color: #333;
+            color: #000000;
         }
         .stars {
             color: #ddd;
@@ -107,14 +107,15 @@
             cursor: pointer;
         }
         .stars span {
-            transition: color 0.3s ease;
+            color: #ddd;
+            font-size: 22px;
+            cursor: pointer;
         }
-        .stars.selected {
+
+        .stars span.active {
             color: #ffc107;
         }
-        .stars:hover {
-            color: #ffc107;
-        }
+
         .rating-display {
             color: #ffc107;
             font-size: 18px;
@@ -387,6 +388,21 @@
             background: #dc3545;
         }
     }
+            /* === REVIEW STAR DISPLAY === */
+        .review-stars {
+            display: inline-flex;
+            gap: 4px;
+            margin: 6px 0;
+        }
+
+        .review-star {
+            font-size: 20px;
+            color: #ccc;
+        }
+
+        .review-star.active {
+            color: #ffc107;
+        }
 
     </style>
 </head>
@@ -980,6 +996,7 @@
                     return;
                 }
                 currentProductId = id;
+                currentProduct = product;
 
                 // isi halaman detail
                 document.getElementById('product-title').innerText = product.name;
@@ -988,6 +1005,8 @@
                 document.getElementById('product-description').innerText = product.description || '';
 
                 // tampilkan halaman detail
+                initRatingStars();
+                renderReviews(product);
                 hideAllPages();
                 document.getElementById('product-detail').style.display = 'block';
             }
@@ -998,29 +1017,41 @@
         }
 
             function renderReviews(product) {
-            const reviewsContainer = document.getElementById('reviews');
-            reviewsContainer.innerHTML = '';
+                const reviewsContainer = document.getElementById('reviews');
+                reviewsContainer.innerHTML = '';
 
-            if (!Array.isArray(product.reviews)) {
-                product.reviews = [];
+                if (!Array.isArray(product.reviews)) {
+                    product.reviews = [];
+                }
+
+                if (product.reviews.length === 0) {
+                    reviewsContainer.innerHTML = '<p>Belum ada ulasan.</p>';
+                    return;
+                }
+
+                product.reviews.forEach(review => {
+                    let starsHTML = '';
+
+                    for (let i = 1; i <= 5; i++) {
+                        starsHTML += `
+                            <span class="review-star ${i <= review.rating ? 'active' : ''}">
+                                ★
+                            </span>
+                        `;
+                    }
+
+                    const div = document.createElement('div');
+                    div.className = 'review';
+                    div.innerHTML = `
+                        <strong>${review.name}</strong><br>
+                        <div class="review-stars">${starsHTML}</div>
+                        <p>${review.comment}</p>
+                    `;
+
+                    reviewsContainer.appendChild(div);
+                });
             }
 
-            if (product.reviews.length === 0) {
-                reviewsContainer.innerHTML = '<p>Belum ada ulasan.</p>';
-                return;
-            }
-
-            product.reviews.forEach(review => {
-                const div = document.createElement('div');
-                div.className = 'review';
-                div.innerHTML = `
-                    <strong>${review.name}</strong><br>
-                    Rating: ${'★'.repeat(review.rating)}<br>
-                    <p>${review.comment}</p>
-                `;
-                reviewsContainer.appendChild(div);
-            });
-        }
 
 
         function resetReviewForm() {
@@ -1243,45 +1274,64 @@
                 });
             }
         });
-            document.getElementById('review-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+            const reviewForm = document.getElementById('review-form');
 
-            if (!user) {
-                alert('Silakan login untuk memberi ulasan');
-                return;
-            }
+                // 🔥 PASTIKAN TIDAK DOUBLE
+                reviewForm.onsubmit = function (e) {
+                    e.preventDefault();
 
-            if (!selectedRating) {
-                alert('Pilih rating dulu');
-                return;
-            }
+                    console.log('🔥 submit ulasan');
 
-            const comment = document.getElementById('review-comment').value;
+                    if (!user) {
+                        alert('Silakan login untuk memberi ulasan');
+                        return;
+                    }
 
-            const review = {
-                name: user.name,           // ⭐ DARI PROFIL
-                rating: selectedRating,
-                comment: comment,
-                date: new Date().toLocaleString()
-            };
+                    if (!currentProductId || !products[currentProductId]) {
+                        alert('Produk tidak valid');
+                        return;
+                    }
 
-            if (!currentProduct.reviews) {
-                currentProduct.reviews = [];
-            }
+                    if (!selectedRating) {
+                        alert('Pilih rating dulu');
+                        return;
+                    }
 
-            currentProduct.reviews.push(review);
+                    const comment = document.getElementById('review-comment').value.trim();
+                    if (!comment) {
+                        alert('Ulasan tidak boleh kosong');
+                        return;
+                    }
 
-                // SIMPAN KE localStorage
-                localStorage.setItem('products', JSON.stringify(products));
+                    const review = {
+                        name: user.name,
+                        rating: selectedRating,
+                        comment: comment,
+                        date: new Date().toLocaleString()
+                    };
 
-                renderReviews(currentProduct);
-                resetReviewForm();
-                            alert('Ulasan berhasil dikirim!');
+                    // ✅ SIMPAN KE PRODUK ASLI
+                    if (!products[currentProductId].reviews) {
+                        products[currentProductId].reviews = [];
+                    }
 
-            document.getElementById('review-comment').value = '';
-            selectedRating = 0;
-            resetStars();
-        });
+                    products[currentProductId].reviews.push(review);
+
+                    // ✅ SIMPAN KE STORAGE
+                    localStorage.setItem('products', JSON.stringify(products));
+
+                    // ✅ REFRESH UI TANPA RELOAD
+                    renderReviews(products[currentProductId]);
+
+                    // ✅ RESET FORM
+                    document.getElementById('review-comment').value = '';
+                    selectedRating = 0;
+                    resetStars();
+
+                    // ✅ ALERT SEKARANG PASTI MUNCUL
+                    alert('Ulasan berhasil dikirim ⭐');
+                };
+
 
 
             function updateMenuAccess() {
@@ -1345,7 +1395,26 @@
         });
         document.getElementById('registration').style.display = 'none';
     }
+    function initRatingStars() {
+        window.selectedRating = 0;
 
+        const stars = document.querySelectorAll('#rating-stars span');
+        console.log('⭐ jumlah bintang:', stars.length);
+
+        stars.forEach((star, index) => {
+            star.onclick = function () {
+                window.selectedRating = index + 1;
+
+                stars.forEach(s => s.classList.remove('active'));
+
+                for (let i = 0; i < window.selectedRating; i++) {
+                    stars[i].classList.add('active');
+                }
+
+                console.log('⭐ rating dipilih:', window.selectedRating);
+            };
+        });
+    }
 
 </script>
 
